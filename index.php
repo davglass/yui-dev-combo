@@ -10,7 +10,7 @@ function execGit($cmd) {
     exec($cmd . " 2>&1", $output, $result);
     umask($oldUMask);
     
-    echo('<pre>'.implode($output, "\n").'</pre>');
+    echo('<pre># '.$cmd."\n\n".implode($output, "\n").'</pre>');
 }
 
 if ($_GET['fetch'] && $_GET['version']) {
@@ -37,8 +37,8 @@ if ($_GET['fetch'] && $_GET['version']) {
         chdir($base);
         execGit($git.' checkout master');
         execGit($git.' pull');
-        execGit($git.' checkout '.$_GET['fetch']);
-        execGit('cp -R '.$base.'/build '.$tag.'/build');
+        execGit($git.' checkout -b '.$_GET['fetch']);
+        exec('cp -R '.$base.'/build '.$tag.'/build');
         execGit($git.' checkout master');
         
         echo('Tag sync done, you can now use this tag as a combo URL');
