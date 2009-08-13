@@ -43,7 +43,7 @@ if ($_GET['fetch'] && $_GET['version']) {
         
         echo('<p>Tag sync done, you can now use this tag as a combo URL:</p>');
         $file = (($_GET['version'] == 3) ? 'yui/yui-min' : 'yuiloader-dom-event/yuiloader-dom-event');
-        echo('<pre><script src="http://dev-combo.davglass.com/?'.$_GET['fetch'].'/build/'.$file.'.js"></script></pre>');
+        echo('<textarea style="width: 90%; height: 40px;"><script src="http://dev-combo.davglass.com/?'.$_GET['fetch'].'/build/'.$file.'.js"></script></textarea>');
     } else {
         echo('Fetch failed..');
     }
