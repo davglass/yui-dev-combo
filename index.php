@@ -2,15 +2,15 @@
 $q = $_SERVER['QUERY_STRING'];
 $sha1 = sha1($q);
 
-function execGit($cmd) {
+function execGit($git, $cmd) {
     $output = array();
     $result;
 
     $oldUMask = umask(0022);
-    exec($cmd . " 2>&1", $output, $result);
+    exec($git.' '.$cmd . " 2>&1", $output, $result);
     umask($oldUMask);
     
-    echo('<pre># '.$cmd."\n\n".implode($output, "\n").'</pre>');
+    echo('<pre># git '.$cmd."\n\n".implode($output, "\n").'</pre>');
 }
 
 if ($_GET['fetch'] && $_GET['version']) {
@@ -35,11 +35,11 @@ if ($_GET['fetch'] && $_GET['version']) {
         //echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
         chdir($base);
-        execGit($git.' checkout master');
-        execGit($git.' pull');
-        execGit($git.' checkout -b '.$_GET['fetch']);
+        execGit($git.'checkout master');
+        execGit($git.'pull');
+        execGit($git.'checkout -b '.$_GET['fetch']);
         exec('cp -R '.$base.'/build '.$tag.'/build');
-        execGit($git.' checkout master');
+        execGit($git.'checkout master');
         
         echo('Tag sync done, you can now use this tag as a combo URL');
     } else {
