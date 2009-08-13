@@ -41,7 +41,9 @@ if ($_GET['fetch'] && $_GET['version']) {
         exec('cp -R '.$base.'/build '.$tag.'/build');
         execGit($git, 'checkout master');
         
-        echo('Tag sync done, you can now use this tag as a combo URL');
+        echo('<p>Tag sync done, you can now use this tag as a combo URL:</p>');
+        $file = (($_GET['version'] == 3) ? 'yui/yui-min' : 'yuiloader-dom-event/yuiloader-dom-event');
+        echo('<pre><script src="http://dev-combo.davglass.com/?'.$_GET['fetch'].'/build/'.$file.'.js"></script></pre>');
     } else {
         echo('Fetch failed..');
     }
