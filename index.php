@@ -35,11 +35,11 @@ if ($_GET['fetch'] && $_GET['version']) {
         //echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
         chdir($base);
-        execGit($git.'checkout master');
-        execGit($git.'pull');
-        execGit($git.'checkout -b '.$_GET['fetch']);
+        execGit($git, 'checkout master');
+        execGit($git, 'pull');
+        execGit($git, 'checkout -b '.$_GET['fetch']);
         exec('cp -R '.$base.'/build '.$tag.'/build');
-        execGit($git.'checkout master');
+        execGit($git, 'checkout master');
         
         echo('Tag sync done, you can now use this tag as a combo URL');
     } else {
