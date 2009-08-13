@@ -13,8 +13,8 @@ if ($_GET['fetch'] && $_GET['version']) {
         $git = trim($git);
         $git .= ' --no-pager --git-dir='.$base.'/.git --work-tree='.$base;
         echo('Fetch ('.$_GET['version'].'.x) Tag: '.$_GET['fetch'].'<br>');
-        $cmd = $git.' checkout master && '.$git.' pull -q && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
-        //echo('<pre>'.$cmd.'</pre>');
+        $cmd = $git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
+        echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
         $out = array();
         exec($cmd, $out);
