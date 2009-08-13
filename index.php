@@ -14,8 +14,11 @@ if ($_GET['fetch'] && $_GET['version']) {
         $git .= ' --git-dir='.$base.'/.git --work-tree='.$base;
         echo('Fetch ('.$_GET['version'].'.x) Tag: '.$_GET['fetch'].'<br>');
         $cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R ./build '.$tag.'/build && '.$git.' checkout master';
-        echo('<pre>'.$cmd.'</pre>');
-        passthru($cmd);
+        //echo('<pre>'.$cmd.'</pre>');
+        //passthru($cmd);
+        $out = array()
+        exec($cmd, $out);
+        echo('<pre>'.implode($out, "\n").'</pre>');
         
         echo('Tag sync done, you can now use this tag as a combo URL');
     } else {
