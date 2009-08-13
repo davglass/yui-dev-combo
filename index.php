@@ -2,6 +2,17 @@
 $q = $_SERVER['QUERY_STRING'];
 $sha1 = sha1($q);
 
+function execGit($cmd) {
+    $output = array();
+    $result;
+
+    $oldUMask = umask(0022);
+    exec($cmd . " 2>&1", $output, $result);
+    umask($oldUMask);
+    
+    echo('<pre>'.implode($output, "\n").'</pre>');
+}
+
 if ($_GET['fetch'] && $_GET['version']) {
     $base = '/tmp/yuidev/base/yui'.$_GET['version'];
     $tag = '/tmp/yuidev/lib/'.$_GET['fetch'];
@@ -13,17 +24,22 @@ if ($_GET['fetch'] && $_GET['version']) {
         $git = trim($git);
         $git .= ' --no-pager --git-dir='.$base.'/.git --work-tree='.$base;
         echo('Fetch ('.$_GET['version'].'.x) Tag: '.$_GET['fetch'].'<br>');
-        $cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
-        echo('<pre>'.$cmd.'</pre>');
+        //$cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
+        /*
+        $git.' checkout master'
+        $git.' pull'
+        $git.' checkout '.$_GET['fetch']
+        cp -R '.$base.'/build '.$tag.'/build
+        '.$git.' checkout master';
+        */
+        //echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
-        $output = array();
-        $result;
-
-		$oldUMask = umask(0022);
-		exec($cmd . " 2>&1", $output, $result);
-		umask($oldUMask);
-        
-        echo('<pre>'.implode($output, "\n").'</pre>');
+        chdir($base);
+        execGit($git.' checkout master');
+        execGit($git.' pull');
+        execGit($git.' checkout '.$_GET['fetch']);
+        execGit('cp -R '.$base.'/build '.$tag.'/build');
+        execGit($git.' checkout master');
         
         echo('Tag sync done, you can now use this tag as a combo URL');
     } else {
