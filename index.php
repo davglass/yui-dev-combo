@@ -11,9 +11,9 @@ if ($_GET['fetch'] && $_GET['version']) {
         mkdir($tag);
         $git = `which git`;
         $git = trim($git);
-        $git .= ' --git-dir='.$base.'/.git --work-tree='.$base;
+        $git .= ' --no-pager --git-dir='.$base.'/.git --work-tree='.$base;
         echo('Fetch ('.$_GET['version'].'.x) Tag: '.$_GET['fetch'].'<br>');
-        $cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R ./build '.$tag.'/build && '.$git.' checkout master';
+        $cmd = $git.' checkout master && '.$git.' pull -q && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
         //echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
         $out = array();
