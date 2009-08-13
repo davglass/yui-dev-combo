@@ -3,8 +3,8 @@ $q = $_SERVER['QUERY_STRING'];
 $sha1 = sha1($q);
 
 if ($_GET['fetch'] && $_GET['version']) {
-    $base = '/tmp/yuiloader/base/yui'.$_GET['version'];
-    $tag = '/tmp/yuiloader/lib/'.$_GET['fetch'];
+    $base = '/tmp/yuidev/base/yui'.$_GET['version'];
+    $tag = '/tmp/yuidev/lib/'.$_GET['fetch'];
     if (is_dir($tag)) {
         echo('Tag already exists!!');
     } elseif (is_dir($base)) {
@@ -43,7 +43,7 @@ $version = explode('/', $files[0]);
 $version = $version[0];
 $build = str_replace('yui'.$_GET['version'].'-', '', $version[0]);
 
-$pre = '/tmp/yuiloader/lib/';
+$pre = '/tmp/yuidev/lib/';
 if (!is_dir($pre)) {
     mkdir($pre, 0777, true);
 }
@@ -57,8 +57,8 @@ if (!$out) {
 function getCache($sha1) {
     $out = apc_fetch('combo-'.$sha1);
     if (!$out) {
-        if (is_file('/tmp/yuiloader/cache/'.$sha1[0].'/'.$sha1)) {
-            $out = @file_get_contents('/tmp/yuiloader/cache/'.$sha1[0].'/'.$sha1);
+        if (is_file('/tmp/yuidev/cache/'.$sha1[0].'/'.$sha1)) {
+            $out = @file_get_contents('/tmp/yuidev/cache/'.$sha1[0].'/'.$sha1);
             apc_store('combo-'.$sha1, $out, 1800);
         }
     }
@@ -82,8 +82,8 @@ function writeFiles($files, $sha1) {
     $out = str_replace('@VERSION@', $version, $out);
     $out = str_replace('@BUILD@', $build, $out);
     apc_store('combo-'.$sha1, $out, 1800);
-    @mkdir('/tmp/yuiloader/cache/'.$sha1[0].'/', 0777, true);
-    @file_put_contents('/tmp/yuiloader/cache/'.$sha1[0].'/'.$sha1, $out);
+    @mkdir('/tmp/yuidev/cache/'.$sha1[0].'/', 0777, true);
+    @file_put_contents('/tmp/yuidev/cache/'.$sha1[0].'/'.$sha1, $out);
     return $out;
 }
 
