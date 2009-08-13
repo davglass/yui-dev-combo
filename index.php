@@ -16,7 +16,7 @@ if ($_GET['fetch'] && $_GET['version']) {
         $cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R ./build '.$tag.'/build && '.$git.' checkout master';
         //echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
-        $out = array()
+        $out = array();
         exec($cmd, $out);
         echo('<pre>'.implode($out, "\n").'</pre>');
         
