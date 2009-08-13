@@ -2,7 +2,7 @@
 $q = $_SERVER['QUERY_STRING'];
 $sha1 = sha1($q);
 
-function execGit($git, $cmd) {
+function execGit($git, $cmd, $echo=false) {
     $output = array();
     $result;
 
@@ -10,44 +10,56 @@ function execGit($git, $cmd) {
     exec($git.' '.$cmd . " 2>&1", $output, $result);
     umask($oldUMask);
     
-    echo('<pre># git '.$cmd."\n\n".implode($output, "\n").'</pre>');
+    if ($echo) {
+        echo('<pre># git '.$cmd."\n\n".implode($output, "\n").'</pre>');
+    }
 }
 
 if ($_GET['fetch'] && $_GET['version']) {
-    $base = '/tmp/yuidev/base/yui'.$_GET['version'];
-    $tag = '/tmp/yuidev/lib/'.$_GET['fetch'];
-    if (is_dir($tag)) {
-        echo('Tag already exists!!');
+    fetchTag($_GET['fetch'], $_GET['version'], true);
+}
+
+function fetchTag($tag, $version, $echo=false) {
+    if (apc_fetch('git-fetch')) {
+        if ($echo) {
+            echo('Another process is fetching a tag, please wait...');
+        } else {
+            echo('alert("Another process is fetching a tag, please wait...");');
+        }
+        exit;
+    }
+    apc_store('git-fetch', true);
+    $base = '/tmp/yuidev/base/yui'.$version;
+    $dir = '/tmp/yuidev/lib/'.$tag;
+    $str = '';
+
+    if (is_dir($dir)) {
+        if ($echo) {
+            $str .= 'Tag already exists!!';
+        }
     } elseif (is_dir($base)) {
-        mkdir($tag);
+        mkdir($dir);
         $git = `which git`;
         $git = trim($git);
         $git .= ' --no-pager --git-dir='.$base.'/.git --work-tree='.$base;
-        echo('Fetch ('.$_GET['version'].'.x) Tag: '.$_GET['fetch'].'<br>');
-        //$cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
-        /*
-        $git.' checkout master'
-        $git.' pull'
-        $git.' checkout '.$_GET['fetch']
-        cp -R '.$base.'/build '.$tag.'/build
-        '.$git.' checkout master';
-        */
-        //echo('<pre>'.$cmd.'</pre>');
-        //passthru($cmd);
+        $str .= 'Fetch ('.$version.'.x) Tag: '.$tag.'<br>';
+
         chdir($base);
-        execGit($git, 'checkout master');
-        execGit($git, 'pull');
-        execGit($git, 'checkout -b '.$_GET['fetch']);
-        exec('cp -R '.$base.'/build '.$tag.'/build');
-        execGit($git, 'checkout master');
+        execGit($git, 'checkout master', $echo);
+        execGit($git, 'pull', $echo);
+        execGit($git, 'checkout -b '.$tag, $echo);
+        exec('cp -R '.$base.'/build '.$dir.'/build');
+        execGit($git, 'checkout master', $echo);
         
-        echo('<p>Tag sync done, you can now use this tag as a combo URL:</p>');
-        $file = (($_GET['version'] == 3) ? 'yui/yui-min' : 'yuiloader-dom-event/yuiloader-dom-event');
-        echo('<textarea style="width: 90%; height: 40px;"><script src="http://dev-combo.davglass.com/?'.$_GET['fetch'].'/build/'.$file.'.js"></script></textarea>');
-    } else {
-        echo('Fetch failed..');
+        $str .= '<p>Tag sync done, you can now use this tag as a combo URL:</p>';
+        $file = (($version == 3) ? 'yui/yui-min' : 'yuiloader-dom-event/yuiloader-dom-event');
+        $str .= '<textarea style="width: 90%; height: 40px;"><script src="http://dev-combo.davglass.com/?'.$tag.'/build/'.$file.'.js"></script></textarea>';
     }
-    exit;
+    apc_store('git-fetch', false);
+    if ($echo) {
+        echo($str);
+        exit;
+    }
 }
 
 if ($_GET['flush']) {
@@ -65,14 +77,17 @@ if (!sizeOf($files)) {
     echo('<strong>Error:</strong> No files found.');
     exit;
 }
-$version = explode('/', $files[0]);
-$version = $version[0];
-$build = str_replace('yui'.$_GET['version'].'-', '', $version);
 
 $pre = '/tmp/yuidev/lib/';
-if (!is_dir($pre)) {
-    mkdir($pre, 0777, true);
+
+$tag = explode('/', $files[0]);
+$tag = $tag[0];
+$version = substr($tag, 3, 1);
+$build = str_replace('yui'.$version.'-', '', $tag);
+if (!@is_dir($pre.$tag)) {
+    fetchTag($tag, $version);
 }
+
 
 $out = getCache($sha1);
 
@@ -92,14 +107,14 @@ function getCache($sha1) {
 }
 
 function writeFiles($files, $sha1) {
-    global $pre, $version, $build;
+    global $pre, $tag, $build;
     $out = '';
     foreach ($files as $k => $file) {
         if (@is_file($pre.$file)) {
             $out .= @file_get_contents($pre.$file)."\n";
         }
     }
-    $out = str_replace('@VERSION@', $version, $out);
+    $out = str_replace('@VERSION@', $tag, $out);
     $out = str_replace('@BUILD@', $build, $out);
     apc_store('combo-'.$sha1, $out, 1800);
     @mkdir('/tmp/yuidev/cache/'.$sha1[0].'/', 0777, true);
