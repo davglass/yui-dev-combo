@@ -41,7 +41,7 @@ if (!sizeOf($files)) {
 }
 $version = explode('/', $files[0]);
 $version = $version[0];
-$build = str_replace('yui'.$_GET['version'].'-', '', $version[0]);
+$build = str_replace('yui'.$_GET['version'].'-', '', $version);
 
 $pre = '/tmp/yuidev/lib/';
 if (!is_dir($pre)) {
@@ -67,17 +67,11 @@ function getCache($sha1) {
 
 function writeFiles($files, $sha1) {
     global $pre, $version, $build;
-    $counter = 0;
     $out = '';
     foreach ($files as $k => $file) {
         if (@is_file($pre.$file)) {
-            $counter++;
             $out .= @file_get_contents($pre.$file)."\n";
         }
-    }
-    if ($counter != sizeOf($files)) {
-        echo('<strong>Error:</strong> No files found.');
-        exit;
     }
     $out = str_replace('@VERSION@', $version, $out);
     $out = str_replace('@BUILD@', $build, $out);
