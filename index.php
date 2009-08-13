@@ -16,9 +16,14 @@ if ($_GET['fetch'] && $_GET['version']) {
         $cmd = 'cd '.$base.' && '.$git.' checkout master && '.$git.' pull && '.$git.' checkout '.$_GET['fetch'] .' && cp -R '.$base.'/build '.$tag.'/build && '.$git.' checkout master';
         echo('<pre>'.$cmd.'</pre>');
         //passthru($cmd);
-        $out = array();
-        exec($cmd, $out);
-        echo('<pre>'.implode($out, "\n").'</pre>');
+        $output = array();
+        $result;
+
+		$oldUMask = umask(0022);
+		exec($cmd . " 2>&1", $output, $result);
+		umask($oldUMask);
+        
+        echo('<pre>'.implode($output, "\n").'</pre>');
         
         echo('Tag sync done, you can now use this tag as a combo URL');
     } else {
