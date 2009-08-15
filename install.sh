@@ -16,7 +16,6 @@ if [ "$apc" == "" ]; then
     echo "APC PHP module is not installed."
     echo "Performance will be better if it's installed.. I'm just sayin.."
     echo "------------------------------------------------------------------------------------------"
-    exit;
 fi
 
 if [ -d /tmp/yuidev ]; then
