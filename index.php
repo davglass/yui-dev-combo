@@ -1,6 +1,7 @@
 <?php
 $q = $_SERVER['QUERY_STRING'];
 $sha1 = sha1($q);
+$apc = function_exists('apc_store');
 
 function execGit($git, $cmd, $echo=false) {
     $output = array();
@@ -20,15 +21,18 @@ if ($_GET['fetch'] && $_GET['version']) {
 }
 
 function fetchTag($tag, $version, $echo=false) {
-    if (apc_fetch('git-fetch')) {
-        if ($echo) {
-            echo('Another process is fetching a tag, please wait...');
-        } else {
-            echo('alert("Another process is fetching a tag, please wait...");');
+    global $apc;
+    if ($apc) {
+        if (apc_fetch('git-fetch')) {
+            if ($echo) {
+                echo('Another process is fetching a tag, please wait...');
+            } else {
+                echo('alert("Another process is fetching a tag, please wait...");');
+            }
+            exit;
         }
-        exit;
+        apc_store('git-fetch', true);
     }
-    apc_store('git-fetch', true);
     $base = '/tmp/yuidev/base/yui'.$version;
     $dir = '/tmp/yuidev/lib/'.$tag;
     $str = '';
@@ -55,20 +59,17 @@ function fetchTag($tag, $version, $echo=false) {
         $file = (($version == 3) ? 'yui/yui-min' : 'yuiloader-dom-event/yuiloader-dom-event');
         $str .= '<textarea style="width: 90%; height: 40px;"><script src="http://dev-combo.davglass.com/?'.$tag.'/build/'.$file.'.js"></script></textarea>';
     }
-    apc_store('git-fetch', false);
+    if ($apc) {
+        apc_store('git-fetch', false);
+    }
     if ($echo) {
         echo($str);
         exit;
     }
 }
 
-if ($_GET['flush']) {
+if ($_GET['flush'] && $apc) {
     apc_clear_cache('user');
-}
-
-if (!function_exists('apc_fetch')) {
-    echo('<strong>Error:</strong> APC must be installed!!');
-    exit;
 }
 
 
@@ -96,18 +97,23 @@ if (!$out) {
 }
 
 function getCache($sha1) {
-    $out = apc_fetch('combo-'.$sha1);
+    global $apc;
+    if ($apc) {
+        $out = apc_fetch('combo-'.$sha1);
+    }
     if (!$out) {
         if (is_file('/tmp/yuidev/cache/'.$sha1[0].'/'.$sha1)) {
             $out = @file_get_contents('/tmp/yuidev/cache/'.$sha1[0].'/'.$sha1);
-            apc_store('combo-'.$sha1, $out, 1800);
+            if ($apc) {
+                apc_store('combo-'.$sha1, $out, 1800);
+            }
         }
     }
     return $out;
 }
 
 function writeFiles($files, $sha1) {
-    global $pre, $tag, $build;
+    global $pre, $tag, $build, $apc;
     $out = '';
     foreach ($files as $k => $file) {
         if (@is_file($pre.$file)) {
@@ -116,7 +122,9 @@ function writeFiles($files, $sha1) {
     }
     $out = str_replace('@VERSION@', $tag, $out);
     $out = str_replace('@BUILD@', $build, $out);
-    apc_store('combo-'.$sha1, $out, 1800);
+    if ($apc) {
+        apc_store('combo-'.$sha1, $out, 1800);
+    }
     @mkdir('/tmp/yuidev/cache/'.$sha1[0].'/', 0777, true);
     @file_put_contents('/tmp/yuidev/cache/'.$sha1[0].'/'.$sha1, $out);
     return $out;
