@@ -1,0 +1,42 @@
+h1. YUI Development Combo Server
+
+This php script is designed to help while developing and debugging yui.
+
+Not only is it a local combo handler, it will also allow you to pull and combo specific tags from git.
+
+h2. Example
+
+<pre class="console">
+<script type="text/javascript" src="index.php?yui3-1292/build/yui/yui-min.js"></script>
+<script type="text/javascript">
+YUI({
+	comboBase: 'index.php?',
+	combine: true
+}).use('node', function(Y) {
+	Y.on('domready', function() {
+		Y.get('body').setStyle('backgroundColor', 'green').set('innerHTML', 'YUI 3.x tag ' + YUI.version + ' loaded.');
+	});
+});
+</script>
+</pre>
+
+or
+
+<pre class="console">
+<script type="text/javascript" src="index.php?yui2-2164/build/yuiloader/yuiloader-min.js"></script>
+<script type="text/javascript">
+var loader = new YAHOO.util.YUILoader({
+	comboBase: 'index.php?',
+	combine: true,
+	require: ['event', 'dom'],
+	onSuccess: function() {
+		YAHOO.util.Dom.setStyle(document.body, 'background-color', 'green');
+		document.body.innerHTML = 'YUI 2.x version ' + YAHOO.VERSION + ' loaded.';
+	}
+});
+loader.insert();
+</script>
+</pre>
+
+
+This package has only been tested on a Mac, but it should run under Linux ;)
