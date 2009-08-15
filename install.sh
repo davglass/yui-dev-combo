@@ -88,8 +88,16 @@ echo "--------------------------------------------------------------------------
 echo "Fetching complete.."
 echo ""
 echo "Temporary directories need admin (sudo) privileges, asking.."
-sudo chown -R www:www /tmp/yuidev
+www="www"
+wwwtest=`cat /etc/passwd | grep www-data`
+if [ "$wwwtest" != ""]; then
+    www="www-data"
+fi
+sudo chown -R $www:$www /tmp/yuidev
 sudo chmod -R +w /tmp/yuidev
+echo " * If the above command errors, then I couldn't guess who owns apache."
+echo " * Please change the owner (recursively) for the /tmp/yuidev folder."
+echo ""
 echo "Installation complete."
 echo ""
 echo "------------------------------------------------------------------------------------------"
